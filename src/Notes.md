@@ -150,3 +150,39 @@ subject.subscribe((value) => {
 
 subject;
 ```
+
+### Scan Operator:
+
+```
+const { Subject} = Rx;
+const {tap} = RxOperators;
+
+const subject = new Subject()
+    .pipe(
+        scan((accumulator, value) => {
+            return accumulator + value;
+        }, 0)
+    );
+//seed value = 0 
+ 
+setTimeout( () => {
+    subject.next(1); 
+},1000);
+
+setTimeout( () => {
+    subject.next(2); 
+},2000);
+
+setTimeout( () => {
+    subject.next(3); 
+},3000);
+
+
+subject.subscribe((value) => {
+    console.log(value);
+});
+
+//Output: 1,3,6
+
+subject;
+```

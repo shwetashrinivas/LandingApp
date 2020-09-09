@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpParams , HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, switchMap, pluck, mergeMap, filter, toArray, share } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { map, switchMap, pluck, mergeMap, filter, toArray, share, tap, catchError, retry } from 'rxjs/operators';
+import {NotificationsService } from '../notifications/notifications.service';
 
 interface OpenWeatherResponse{
   list: {
@@ -20,7 +21,9 @@ export class ForecastService {
 
   private url ='https://api.openweathermap.org/data/2.5/forecast'
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient, 
+    private notificationsService: NotificationsService) { }
 
   //Take coords (lat/long) and pass it to map operator and then send it to HttpParams which will finally pass it to switchMap operator.
 
@@ -66,7 +69,8 @@ export class ForecastService {
     );
   } */
 
-  //Angular way
+  //Angular way-1
+  /*
   getCurrentLocation(){
     return new Observable<Coordinates>( observer => {
       window.navigator.geolocation.getCurrentPosition(
@@ -76,8 +80,51 @@ export class ForecastService {
         },
         err => observer.error(err)
       );
-    });
+    }).pipe(
+      tap(
+        () => {
+          this.notificationsService.addSuccess('Got your location');
+        }, 
+        () => {
+          this.notificationsService.addError('Failed to get your location');
+        }
+      )
+    );
   }
+*/
+
+//Angular way-2
+getCurrentLocation(){
+  return new Observable<Coordinates>( observer => {
+    window.navigator.geolocation.getCurrentPosition(
+      position => {
+        observer.next(position.coords);
+        observer.complete();
+      },
+      err => observer.error(err)
+    );
+  }).pipe(
+    retry(1),
+    tap(
+      () => {
+        this.notificationsService.addSuccess('Got your location');
+      }
+    ),
+    catchError((err) => {
+      // #1- Handle the error
+      this.notificationsService.addError('Failed to get your location');
+      
+      // #2 - Return a new observable that emits a default location
+      return throwError(err);
+
+      /*This is same as:
+      return new Observable(observer => {
+        observer.error(err);
+      })*/
+    })  
+  );
+}
+
 
 
 
