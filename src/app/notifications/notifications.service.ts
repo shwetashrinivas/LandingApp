@@ -41,9 +41,12 @@ export class NotificationsService {
       text: message
     });
 
-    setTimeout(() => {
-        this.clearMessage(id);
-    },5000);
+    this.clearMessage(id);
+
+
+    // setTimeout(() => {
+    //     this.clearMessage(id);
+    // },5000);
   }
 
   addError(message: string){
@@ -56,9 +59,11 @@ export class NotificationsService {
       type: 'error'
     });
 
-    setTimeout(() => {
-        this.clearMessage(id);
-    },5000);
+    this.clearMessage(id);
+    
+    // setTimeout(() => {
+    //     this.clearMessage(id);
+    // },5000);
   }
 
   clearMessage(id: number){
